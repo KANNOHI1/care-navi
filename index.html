@@ -79,6 +79,22 @@
   .anx .a{color:var(--fg-soft);font-size:12.5px}
   .confirm{font-size:12.5px;background:#FFF7F2;border:1px solid #F0D9C9;border-radius:14px;padding:14px 16px;color:#8a6a52;line-height:1.85}
   .disc{font-size:11px;color:#b3aca6;margin-top:26px;line-height:1.8}
+  /* top action bar */
+  .topbar{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tbtn{font-size:12px;color:var(--accent);background:var(--card-soft);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-family:inherit;cursor:pointer}
+  /* clinic chip */
+  .chip{display:inline-block;font-size:11px;color:var(--accent);background:var(--card-soft);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:10px}
+  /* list filters */
+  .filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .fbtn{font-size:13px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--fg-soft);font-family:inherit;cursor:pointer}
+  .fbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* diff page */
+  .diffwrap{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+  .diffcard{border:1.5px solid var(--line);border-radius:18px;padding:18px;background:var(--card)}
+  .dh{font-family:var(--serif);font-size:16px;font-weight:500;text-align:center;margin-bottom:6px}
+  .ddl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px}
+  .ddl dt{color:var(--accent);white-space:nowrap}
+  .ddl dd{color:var(--fg)}
 </style>
 </head>
 <body>
@@ -165,28 +181,50 @@ const QUESTIONS = [
 
 /* ===== clinic data（2026年6月 調査・税込） ===== */
 const C = {
-  aoba:{ nm:"あおばクリニック 札幌院", price:"VIO 1回 ¥9,800（都度払い・コース契約不要）",
+  aoba:{ nm:"あおばクリニック 札幌院", price:"VIO 1回 ¥9,800（都度払い・コース契約不要）", tags:["heat"],
     rows:[["使用機種","ジェントルレーズ（熱破壊式・アレキサンドライト）"],
-      ["剃毛","自分で剃ればほぼ不要。Oラインなど剃りにくい部位を任せる場合 ¥3,000/部位"],
+      ["剃毛","自分で剃ればほぼ不要。Oラインなど ¥3,000/部位"],
       ["麻酔","公式に明記なし（予約時に確認）"],
-      ["場所","大通エリア（手稲からJR札幌→地下鉄で約15分）"]],
+      ["手稲駅から","約20分（JR札幌→地下鉄大通）"]],
     url:"https://aoba-cg.com/price-laser.html" },
-  sbc:{ nm:"湘南美容クリニック（札幌）", price:"VIO 1回 ¥9,800／5回 ¥45,000",
+  sbc:{ nm:"湘南美容クリニック（札幌）", price:"VIO 1回 ¥9,800／5回 ¥45,000", tags:["unknown"],
     rows:[["VIO機種","未確認（カウンセリングで要確認）"],
       ["麻酔","クリーム ¥980／笑気 ¥2,200（部位ごと）"],
-      ["場所","札幌駅エリア（手稲からJRで通いやすい）"]],
+      ["手稲駅から","約13分（JRで札幌駅）"]],
     url:"https://www.s-b-c.net/datsumo/charge_list/" },
-  regina:{ nm:"レジーナクリニック 札幌院", price:"VIO 5回 ¥96,000",
+  regina:{ nm:"レジーナクリニック 札幌院", price:"VIO 5回 ¥96,000", tags:["heat","storage"],
     rows:[["麻酔・剃毛","どちらも無料"],
       ["機種","熱破壊式・蓄熱式の両方を扱う"],
-      ["場所","大通駅 徒歩圏"]],
+      ["手稲駅から","約20分（大通駅 徒歩圏）"]],
     url:"https://reginaclinic.jp/part/vio/" },
-  freya:{ nm:"フレイアクリニック 札幌院", price:"VIO 5回 ¥99,000",
+  freya:{ nm:"フレイアクリニック 札幌院", price:"VIO 5回 ¥99,000", tags:["heat","storage"],
     rows:[["麻酔","麻酔クリーム無料（安心プラン）"],
       ["機種","熱破壊式・蓄熱式を選択可能"],
-      ["場所","札幌駅 南口 徒歩圏"]],
+      ["手稲駅から","約13分（札幌駅 南口）"]],
     url:"https://www.frey-a.jp/menu/" },
+  chuo:{ nm:"札幌中央クリニック", price:"VIO 1回 ¥17,600／5回 ¥79,200", tags:["unknown"],
+    rows:[["機種","公式に記載なし（要確認）"],
+      ["麻酔","公式に記載なし"],
+      ["ハイジニーナ","形を整えても無毛でも同料金"],
+      ["手稲駅から","約20分（大通駅19番出口 直結）"]],
+    url:"https://sapporo-datsumou.com/price.html" },
+  yamanaka:{ nm:"山中皮膚科スキンケアクリニック", price:"VIO料金は公式未掲載（要問い合わせ）", tags:["unknown"],
+    rows:[["注意","VIO対応・料金・機種は公式で確認できず。手稲区内で医療を希望する場合の問い合わせ先候補です"],
+      ["手稲駅から","手稲区前田（手稲駅 近く）"]],
+    url:"http://www.yamanaka-hifuka.com/" },
+  lelien:{ nm:"ルリアン（LeLien）", price:"VIO 1回 ¥3,000（新規）／¥5,500（再来）", tags:["esthe"],
+    rows:[["支払い","都度払い・回数券あり"],
+      ["方式","公式に記載なし（美肌脱毛サロン）"],
+      ["手稲駅から","車で約7分（前田）"]],
+    url:null },
+  nonine:{ nm:"NO.NINE（ナンバーナイン）", price:"SHR脱毛（痛みが少ない方式）", tags:["esthe"],
+    rows:[["VIO料金","公式に記載なし（予約時に確認）"],
+      ["支払い","都度払い・回数券あり"],
+      ["特徴","女性専用・完全予約制"],
+      ["手稲駅から","徒歩11分（前田・無料駐車場）"]],
+    url:null },
 };
+const ORDER = ["aoba","sbc","regina","freya","chuo","yamanaka","lelien","nonine"];
 
 const ANX = {
   pain:["痛みが怖い","麻酔（クリーム／笑気）で軽減できます。まず1回試して耐えられるか確認するのが安全です。レジーナ・フレイアは麻酔が無料です。"],
@@ -203,6 +241,8 @@ let step = -1; // -1 intro, 0..n-1 questions, n result
 const app = document.getElementById("app");
 
 function render(){
+  if(step==="list") return renderList();
+  if(step==="diff") return renderDiff();
   if(step === -1) return renderIntro();
   if(step >= 0 && step < QUESTIONS.length) return renderQ(step);
   return renderResult();
@@ -295,22 +335,8 @@ function renderResult(){
   let esthe="";
   if(a.pain==="avoid" || a.access==="teine" || a.method==="esthe"){
     esthe = `<div class="sec"><h3>痛みを避けたい／近場で完結したい場合</h3>
-      <div class="factbox" style="margin-bottom:12px">手稲区内のエステ脱毛も選択肢です。痛みは少ない一方、医療より回数が多く必要で（目安12回以上）、効果は穏やかです。「無くす」より「自己処理を楽にする」用途向きです。</div>
-      <div class="clcard" style="margin-bottom:11px">
-        <div class="nm">ルリアン（LeLien）</div>
-        <div class="price">VIO 1回 ¥3,000（新規）／¥5,500（再来）</div>
-        <dl><dt>支払い</dt><dd>都度払い・回数券あり</dd>
-        <dt>場所</dt><dd>手稲区前田（手稲駅から車で約7分）</dd>
-        <dt>方式</dt><dd>公式に記載なし（美肌脱毛サロン）</dd></dl>
-      </div>
-      <div class="clcard">
-        <div class="nm">NO.NINE（ナンバーナイン）</div>
-        <div class="price">SHR脱毛（痛みが少ない方式）</div>
-        <dl><dt>VIO料金</dt><dd>公式に記載なし（予約時に確認）</dd>
-        <dt>支払い</dt><dd>都度払い・回数券あり</dd>
-        <dt>場所</dt><dd>手稲区前田（手稲駅 徒歩11分・無料駐車場）</dd>
-        <dt>特徴</dt><dd>女性専用・完全予約制</dd></dl>
-      </div></div>`;
+      <div class="factbox" style="margin-bottom:12px">手稲区内のエステ脱毛も選択肢です。痛みは少ない一方、医療より回数が多く必要で（目安12回以上）、効果は穏やか。「無くす」より「自己処理を楽にする」用途向きです。</div>
+      ${cl("lelien",false)}<div style="height:11px"></div>${cl("nonine",false)}</div>`;
   }
 
   // 回数の目安
@@ -332,11 +358,17 @@ function renderResult(){
 
   app.innerHTML = `
     <div class="screen">
+      <div class="topbar">
+        <button class="tbtn" onclick="restart()">↻ 最初から</button>
+        <button class="tbtn" onclick="go('list')">全店舗をくらべる →</button>
+      </div>
       <div class="kicker">あなたへの提案</div>
       <div class="rhead">まず「医療の熱破壊式」を<br>1回だけ試してみる。</div>
       <p class="rwhy">${why}</p>
 
-      <div class="sec"><h3>最初の一歩（おすすめ）</h3>${primary}${altAccess}</div>
+      <div class="sec"><h3>最初の一歩（おすすめ）</h3>${primary}${altAccess}
+        <p class="note" style="margin-top:12px"><a href="#" onclick="go('diff');return false;" style="color:var(--accent);border-bottom:1px solid var(--accent)">熱破壊式と蓄熱式のちがいを見る →</a></p>
+      </div>
 
       ${counts}
 
@@ -350,23 +382,110 @@ function renderResult(){
       </div>
 
       <p class="disc">※料金は2026年6月時点の調査値（税込）。キャンペーン等で変わることがあります。最終的な金額は各院の公式・カウンセリングでご確認ください。痛みや効果には個人差があります。</p>
-
-      <button class="btn ghost" onclick="restart()">もう一度はじめから</button>
     </div>`;
 }
 
+function chipText(c){
+  const t=c.tags;
+  if(t.includes("esthe")) return "エステ（光／SHR）";
+  if(t.includes("heat")&&t.includes("storage")) return "医療・熱破壊＋蓄熱";
+  if(t.includes("heat")) return "医療・熱破壊式";
+  if(t.includes("storage")) return "医療・蓄熱式";
+  return "医療・機種未確認";
+}
 function cl(key, primary){
   const c = C[key];
   const rows = c.rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  const link = c.url ? `<a href="${c.url}" target="_blank" rel="noopener">公式ページを見る →</a>` : "";
   return `<div class="clcard ${primary?'primary':''}">
+    <div class="chip">${chipText(c)}</div>
     <div class="nm">${c.nm}</div>
     <div class="price">${c.price}</div>
     <dl>${rows}</dl>
-    <a href="${c.url}" target="_blank" rel="noopener">公式の料金ページを見る →</a>
+    ${link}
   </div>`;
 }
 
-function restart(){ for(const k in answers) delete answers[k]; go(-1); }
+/* ===== 全店舗リスト ===== */
+let listFilter="all";
+function setFilter(k){ listFilter=k; renderList(); }
+function renderList(){
+  const labels=[["all","全部"],["heat","熱破壊式"],["storage","蓄熱式"],["esthe","エステ"]];
+  const btns=labels.map(([k,l])=>`<button class="fbtn ${listFilter===k?'on':''}" onclick="setFilter('${k}')">${l}</button>`).join("");
+  const keys=ORDER.filter(k=> listFilter==="all" ? true : C[k].tags.includes(listFilter));
+  const cards=keys.map(k=>cl(k,false)).join('<div style="height:11px"></div>');
+  app.innerHTML=`
+    <div class="screen">
+      <div class="topbar">
+        <button class="tbtn" onclick="go(${QUESTIONS.length})">← 結果にもどる</button>
+        <button class="tbtn" onclick="restart()">↻ 最初から</button>
+      </div>
+      <h2 class="q">店舗をくらべる</h2>
+      <p class="note" style="margin-bottom:14px"><a href="#" onclick="go('diff');return false;" style="color:var(--accent);border-bottom:1px solid var(--accent)">熱破壊式と蓄熱式のちがいを見る →</a></p>
+      <div class="filters">${btns}</div>
+      ${listFilter==="all"?'<p class="note" style="margin:0 0 14px">※「機種未確認」の院は、熱破壊／蓄熱のしぼり込みには表示されません。</p>':''}
+      ${cards||'<p class="note">該当する店舗がありません。</p>'}
+    </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ===== 熱破壊式と蓄熱式の図解 ===== */
+function diffFig(deep){
+  const hl = deep
+    ? '<circle cx="50" cy="138" r="14" fill="#C58BA0" opacity="0.22"/><circle cx="50" cy="138" r="5" fill="#C58BA0"/>'
+    : '<circle cx="50" cy="92" r="14" fill="#C58BA0" opacity="0.22"/><circle cx="50" cy="92" r="5" fill="#C58BA0"/>';
+  return `<svg viewBox="0 0 110 168" width="100%" style="max-width:128px;display:block;margin:0 auto 12px">
+    <rect x="0" y="0" width="110" height="26" fill="#F6EEEF"/>
+    <text x="6" y="17" font-size="9" fill="#a99a93">皮ふの表面</text>
+    <line x1="50" y1="8" x2="50" y2="150" stroke="#cdbfb9" stroke-width="2"/>
+    <path d="M50,150 q-9,9 -5,17" fill="none" stroke="#cdbfb9" stroke-width="2"/>
+    ${hl}
+    <text x="68" y="95" font-size="9" fill="#6E6A66">バルジ</text>
+    <text x="68" y="141" font-size="9" fill="#6E6A66">毛根</text>
+  </svg>`;
+}
+function renderDiff(){
+  app.innerHTML=`
+    <div class="screen">
+      <div class="topbar">
+        <button class="tbtn" onclick="go('list')">← 店舗一覧へ</button>
+        <button class="tbtn" onclick="go(${QUESTIONS.length})">結果にもどる</button>
+      </div>
+      <h2 class="q">熱破壊式と蓄熱式のちがい</h2>
+      <div class="lead">どちらも医療レーザー脱毛ですが、「毛のどこを狙うか」が違います。VIO選びに関わる部分だけ、かんたんに整理します。</div>
+      <div class="diffwrap">
+        <div class="diffcard">
+          <div class="dh">熱破壊式（ショット式）</div>
+          ${diffFig(true)}
+          <dl class="ddl">
+            <dt>狙う場所</dt><dd>毛根（メラニン）に高出力で一気に</dd>
+            <dt>痛み</dt><dd>強め（パチンと弾かれる感じ）</dd>
+            <dt>効果実感</dt><dd>早い（1回でも抜ける感覚）</dd>
+            <dt>得意な毛</dt><dd>太く濃い毛 ＝ VIO向き</dd>
+            <dt>回数</dt><dd>少なめで済みやすい</dd>
+            <dt>代表機種</dt><dd>ジェントルレーズ／マックス系</dd>
+          </dl>
+        </div>
+        <div class="diffcard">
+          <div class="dh">蓄熱式（SHRなど）</div>
+          ${diffFig(false)}
+          <dl class="ddl">
+            <dt>狙う場所</dt><dd>バルジ（発毛の司令塔）に低出力でじわじわ</dd>
+            <dt>痛み</dt><dd>弱め（あたたかい程度）</dd>
+            <dt>効果実感</dt><dd>ゆるやか（数回後に実感）</dd>
+            <dt>得意な毛</dt><dd>産毛・日焼け肌にも対応</dd>
+            <dt>回数</dt><dd>やや多めになりやすい</dd>
+            <dt>代表機種</dt><dd>メディオスター／ソプラノ系</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="factbox" style="margin-top:8px"><b>VIOでの結論：</b>太く濃いVIOの毛は、熱破壊式のほうが抜ける実感が早いです。痛みが不安なら、蓄熱式や麻酔の併用で和らげられます。レジーナ・フレイアのように両方を使い分ける院もあります。</div>
+      <button class="btn" onclick="go(${QUESTIONS.length})">結果にもどる</button>
+    </div>`;
+  window.scrollTo(0,0);
+}
+
+function restart(){ for(const k in answers) delete answers[k]; listFilter="all"; go(-1); }
 
 /* ===== gate ===== */
 const gate=document.getElementById("gate"), codeIn=document.getElementById("code"), err=document.getElementById("err");
