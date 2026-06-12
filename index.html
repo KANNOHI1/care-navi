@@ -88,7 +88,7 @@
   <div class="box">
     <h2>はじめる前に</h2>
     <p>共有された合言葉を入力してください。</p>
-    <input id="code" type="tel" inputmode="numeric" placeholder="••••" autocomplete="off">
+    <input id="code" type="text" placeholder="合言葉" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button id="enter">開く</button>
     <div class="err" id="err"></div>
   </div>
@@ -98,7 +98,7 @@
 
 <script>
 /* ===== privacy: 合言葉（変更はこの1行だけ） ===== */
-const PASSCODE = "2026";
+const PASSCODE = "naomi";
 
 /* ===== questions ===== */
 const QUESTIONS = [
@@ -172,7 +172,8 @@ const C = {
       ["場所","大通エリア（手稲からJR札幌→地下鉄で約15分）"]],
     url:"https://aoba-cg.com/price-laser.html" },
   sbc:{ nm:"湘南美容クリニック（札幌）", price:"VIO 1回 ¥9,800／5回 ¥45,000",
-    rows:[["麻酔","クリーム ¥980／笑気 ¥2,200（部位ごと）"],
+    rows:[["VIO機種","未確認（カウンセリングで要確認）"],
+      ["麻酔","クリーム ¥980／笑気 ¥2,200（部位ごと）"],
       ["場所","札幌駅エリア（手稲からJRで通いやすい）"]],
     url:"https://www.s-b-c.net/datsumo/charge_list/" },
   regina:{ nm:"レジーナクリニック 札幌院", price:"VIO 5回 ¥96,000",
@@ -261,11 +262,12 @@ function go(s){ step=s; render(); window.scrollTo(0,0); }
 /* ===== result logic（収束ファネル：第一推奨は常に「熱破壊式を1回試す」） ===== */
 function renderResult(){
   const a = answers;
-  // why（痛みの回答でトーン調整）
+  // why（実際の回答を引用して可変に。決めつけない）
   let why;
-  if(a.pain==="accept") why="効果を重視するあなたには、最も効果実感が出やすい熱破壊式が向いています。まず1回試して、効果と痛みの両方を体感するのが確実です。";
-  else if(a.pain==="anesthesia") why="痛みが不安でも、まず1回試せば「自分が耐えられるか」が分かります。麻酔を併用すれば負担を抑えられます。";
-  else why="痛みを避けたい場合でも、エステに決める前に医療を1回だけ体感しておくと比較ができます。無理だと感じたら、下記のエステに切り替えれば十分です。";
+  if(a.pain==="accept") why="「痛みより効果を優先したい」という回答でした。最も効果実感が出やすい熱破壊式が合います。まず1回試して、効果と痛みの両方を確かめるのが確実です。";
+  else if(a.pain==="anesthesia") why="「麻酔を使えるなら受けられる」という回答でした。まず1回試せば、自分が耐えられるかが分かります。麻酔を併用すれば負担を抑えられます。";
+  else if(a.pain==="avoid") why="「痛みは極力避けたい」という回答でした。エステに決める前に、医療を1回だけ体感して比較するのが安全です。無理だと感じたら、下のエステに切り替えれば十分です。";
+  else why="まず医療を1回だけ試して、痛みと効果を自分で確かめるのが、遠回りに見えていちばん確実です。";
 
   // primary clinic = あおば（熱破壊式が確認できている唯一の都度払い）
   let primary = cl("aoba", true);
@@ -293,7 +295,22 @@ function renderResult(){
   let esthe="";
   if(a.pain==="avoid" || a.access==="teine" || a.method==="esthe"){
     esthe = `<div class="sec"><h3>痛みを避けたい／近場で完結したい場合</h3>
-      <div class="factbox">手稲区内・近隣の<b>エステ脱毛</b>（LeLien、NO.NINE など）も選択肢です。ただしエステは医療より回数が多く必要で、効果は穏やかです。料金は各サロンで異なります。</div></div>`;
+      <div class="factbox" style="margin-bottom:12px">手稲区内のエステ脱毛も選択肢です。痛みは少ない一方、医療より回数が多く必要で（目安12回以上）、効果は穏やかです。「無くす」より「自己処理を楽にする」用途向きです。</div>
+      <div class="clcard" style="margin-bottom:11px">
+        <div class="nm">ルリアン（LeLien）</div>
+        <div class="price">VIO 1回 ¥3,000（新規）／¥5,500（再来）</div>
+        <dl><dt>支払い</dt><dd>都度払い・回数券あり</dd>
+        <dt>場所</dt><dd>手稲区前田（手稲駅から車で約7分）</dd>
+        <dt>方式</dt><dd>公式に記載なし（美肌脱毛サロン）</dd></dl>
+      </div>
+      <div class="clcard">
+        <div class="nm">NO.NINE（ナンバーナイン）</div>
+        <div class="price">SHR脱毛（痛みが少ない方式）</div>
+        <dl><dt>VIO料金</dt><dd>公式に記載なし（予約時に確認）</dd>
+        <dt>支払い</dt><dd>都度払い・回数券あり</dd>
+        <dt>場所</dt><dd>手稲区前田（手稲駅 徒歩11分・無料駐車場）</dd>
+        <dt>特徴</dt><dd>女性専用・完全予約制</dd></dl>
+      </div></div>`;
   }
 
   // 回数の目安
@@ -354,7 +371,7 @@ function restart(){ for(const k in answers) delete answers[k]; go(-1); }
 /* ===== gate ===== */
 const gate=document.getElementById("gate"), codeIn=document.getElementById("code"), err=document.getElementById("err");
 function tryEnter(){
-  if(codeIn.value.trim()===PASSCODE){
+  if(codeIn.value.trim().toLowerCase()===PASSCODE){
     gate.classList.add("hidden"); app.classList.remove("hidden");
     sessionStorage.setItem("ok","1"); render();
   } else { err.textContent="合言葉が違います。"; codeIn.value=""; }
