@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>セルフケア・ナビ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF8F6; --fg:#4A4744; --fg-soft:#6E6A66; --accent:#C58BA0;
+    --line:#ECE3DE; --card:#ffffff; --card-soft:#F6EEEF;
+    --serif:'Noto Serif JP',serif; --sans:'Noto Sans JP',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-weight:300;line-height:1.85;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:480px;margin:0 auto;min-height:100vh;padding:0 24px 80px}
+  .screen{padding-top:48px;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .hidden{display:none!important}
+
+  /* gate */
+  #gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:10;padding:24px}
+  #gate .box{max-width:340px;text-align:center}
+  #gate h2{font-family:var(--serif);font-weight:500;font-size:20px;margin-bottom:8px}
+  #gate p{font-size:13px;color:var(--fg-soft);margin-bottom:22px}
+  #gate input{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;font-family:inherit;font-size:16px;text-align:center;letter-spacing:.2em;outline:none}
+  #gate input:focus{border-color:var(--accent)}
+  #gate button{margin-top:14px;width:100%;padding:14px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;cursor:pointer}
+  #gate .err{color:#c0606f;font-size:12px;margin-top:10px;min-height:16px}
+
+  /* intro */
+  .kicker{font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+  h1{font-family:var(--serif);font-weight:500;font-size:25px;line-height:1.5;margin-bottom:20px}
+  .intro p{font-size:14px;color:var(--fg-soft);margin-bottom:16px}
+  .intro ul{list-style:none;margin:0 0 8px;padding:18px 20px;background:var(--card-soft);border-radius:16px}
+  .intro li{font-size:13px;padding:5px 0 5px 20px;position:relative}
+  .intro li::before{content:"・";position:absolute;left:2px;color:var(--accent)}
+  .note{font-size:12px;color:var(--fg-soft);margin-top:14px}
+  .maker{font-size:11px;color:#b3aca6;margin-top:6px}
+
+  .btn{display:block;width:100%;margin-top:28px;padding:16px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;letter-spacing:.06em;cursor:pointer;transition:opacity .2s}
+  .btn:active{opacity:.8}
+  .btn.ghost{background:transparent;color:var(--fg-soft);border:1.5px solid var(--line);margin-top:12px}
+
+  /* question */
+  .progress{font-size:11px;letter-spacing:.12em;color:var(--accent);margin-bottom:14px}
+  .bar{height:3px;background:var(--line);border-radius:2px;margin-bottom:30px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);transition:width .35s ease}
+  h2.q{font-family:var(--serif);font-weight:500;font-size:21px;line-height:1.5;margin-bottom:14px}
+  .lead{font-size:13px;color:var(--fg-soft);background:var(--card-soft);border-radius:14px;padding:14px 16px;margin-bottom:22px;line-height:1.9}
+  .opts{display:flex;flex-direction:column;gap:11px}
+  .opt{padding:15px 18px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);font-size:14px;line-height:1.55;cursor:pointer;transition:all .15s;color:var(--fg)}
+  .opt:hover{border-color:var(--accent);background:var(--card-soft)}
+  .opt.sel{border-color:var(--accent);background:var(--card-soft);font-weight:400}
+  .opt .ck{color:var(--accent);margin-right:8px;opacity:0;font-weight:500}
+  .opt.sel .ck{opacity:1}
+  .back{margin-top:22px;font-size:13px;color:var(--fg-soft);background:none;border:none;cursor:pointer;font-family:inherit}
+
+  /* result */
+  .rhead{font-family:var(--serif);font-weight:500;font-size:23px;line-height:1.5;margin-bottom:8px}
+  .rwhy{font-size:13.5px;color:var(--fg-soft);margin-bottom:26px}
+  .sec{margin-bottom:24px}
+  .sec h3{font-size:12px;letter-spacing:.1em;color:var(--accent);margin-bottom:12px;font-weight:500}
+  .clcard{border:1.5px solid var(--line);border-radius:18px;padding:20px;background:var(--card)}
+  .clcard.primary{border-color:var(--accent);background:var(--card-soft)}
+  .clcard .nm{font-family:var(--serif);font-size:17px;font-weight:500;margin-bottom:4px}
+  .clcard .price{font-size:20px;color:var(--accent);font-weight:500;margin-bottom:12px;font-family:var(--serif)}
+  .clcard dl{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;font-size:12.5px}
+  .clcard dt{color:var(--fg-soft);white-space:nowrap}
+  .clcard dd{color:var(--fg)}
+  .clcard a{display:inline-block;margin-top:14px;font-size:12px;color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+  .factbox{font-size:13px;background:var(--card-soft);border-radius:14px;padding:16px 18px;line-height:1.9}
+  .factbox b{font-weight:500;color:var(--fg)}
+  .anx{border-left:2px solid var(--accent);padding:4px 0 4px 14px;margin-bottom:14px;font-size:13px}
+  .anx .t{font-weight:500;margin-bottom:2px}
+  .anx .a{color:var(--fg-soft);font-size:12.5px}
+  .confirm{font-size:12.5px;background:#FFF7F2;border:1px solid #F0D9C9;border-radius:14px;padding:14px 16px;color:#8a6a52;line-height:1.85}
+  .disc{font-size:11px;color:#b3aca6;margin-top:26px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- passcode gate -->
+<div id="gate">
+  <div class="box">
+    <h2>はじめる前に</h2>
+    <p>共有された合言葉を入力してください。</p>
+    <input id="code" type="tel" inputmode="numeric" placeholder="••••" autocomplete="off">
+    <button id="enter">開く</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div class="wrap hidden" id="app"></div>
+
+<script>
+/* ===== privacy: 合言葉（変更はこの1行だけ） ===== */
+const PASSCODE = "2026";
+
+/* ===== questions ===== */
+const QUESTIONS = [
+  { id:"goal", title:"はじめに、いちばんの目的を教えてください。",
+    opts:[
+      ["自己処理の手間をなくしたい","selfcare"],
+      ["生理の日も快適に過ごしたい","period"],
+      ["見た目を自分好みに整えたい","shape"],
+      ["とにかく毎日の負担を減らしたい","ease"],
+    ]},
+  { id:"target", title:"目標とする状態を選んでください。",
+    lead:"完全な無毛（ハイジニーナ）にしなくても、毛量を減らすだけで自己処理の負担は大きく下がります。",
+    opts:[
+      ["しっかり無くしたい（ハイジニーナ）","full"],
+      ["自然に残しつつ、量を減らしたい","reduce"],
+      ["まだ決めていない／負担が減れば十分","undecided"],
+    ]},
+  { id:"pain", title:"痛みについて、希望を選んでください。",
+    lead:"事実として、VIOの医療脱毛は痛みが強い部位です。特にIライン・Oラインは痛みを感じやすく、麻酔で軽減するのが一般的です。ただし麻酔は多くの場合、1回ごとの追加費用です（目安 約1,000〜3,000円／無料の院もあります）。回数を重ね毛が減ると、痛みは徐々に軽くなります。",
+    opts:[
+      ["効果を優先し、痛みは受け入れる","accept"],
+      ["麻酔を使えるなら受けられる","anesthesia"],
+      ["痛みは極力避けたい","avoid"],
+    ]},
+  { id:"method", title:"医療とエステ、近い考えはどちらですか。",
+    lead:"医療脱毛は少ない回数で長期間の効果（永久脱毛系）。エステ脱毛は痛みが少ない一方、回数が多く必要で効果は穏やかです。",
+    opts:[
+      ["回数少なく、しっかり減らしたい","medical"],
+      ["痛みが少なく、ゆっくりでよい","esthe"],
+      ["まだ決められない／両方を見たい","both"],
+    ]},
+  { id:"start", title:"始め方の希望を選んでください。",
+    lead:"高額なコースを最初に契約する必要はありません。1回ごとの都度払いで試せる方法があります。",
+    opts:[
+      ["まず1回だけ試したい","try"],
+      ["気に入ればコースで進めたい","course"],
+      ["まずカウンセリングだけ受けたい","counsel"],
+    ]},
+  { id:"access", title:"通いやすさについて教えてください。",
+    lead:"札幌では、冬の移動のしやすさも判断材料になります（手稲区を起点に考えます）。",
+    opts:[
+      ["札幌駅まで出られる（JRで通える）","sapporo"],
+      ["手稲区内・近場がよい","teine"],
+      ["大通エリアも、用事のついでなら可","odori"],
+      ["車で移動できる","car"],
+    ]},
+  { id:"budget", title:"予算の考え方を選んでください。",
+    lead:"料金は「月々◯円」ではなく、総額で比較するのが安全です。",
+    opts:[
+      ["まず1回 約1万円で試したい","small"],
+      ["5〜6回コース（約5〜10万円）まで見据えたい","course"],
+      ["まだ決めていない","undecided"],
+    ]},
+  { id:"anxiety", title:"気になる不安はありますか。", multi:true,
+    lead:"あてはまるものを選んでください（複数可）。選んだ内容に応じて、対処法を最後に表示します。",
+    opts:[
+      ["痛みが怖い","pain"],
+      ["露出や体勢が恥ずかしい","shy"],
+      ["女性スタッフがよい","female"],
+      ["肌トラブルが心配","skin"],
+      ["予約がちゃんと取れるか不安","booking"],
+    ]},
+];
+
+/* ===== clinic data（2026年6月 調査・税込） ===== */
+const C = {
+  aoba:{ nm:"あおばクリニック 札幌院", price:"VIO 1回 ¥9,800（都度払い・コース契約不要）",
+    rows:[["使用機種","ジェントルレーズ（熱破壊式・アレキサンドライト）"],
+      ["剃毛","自分で剃ればほぼ不要。Oラインなど剃りにくい部位を任せる場合 ¥3,000/部位"],
+      ["麻酔","公式に明記なし（予約時に確認）"],
+      ["場所","大通エリア（手稲からJR札幌→地下鉄で約15分）"]],
+    url:"https://aoba-cg.com/price-laser.html" },
+  sbc:{ nm:"湘南美容クリニック（札幌）", price:"VIO 1回 ¥9,800／5回 ¥45,000",
+    rows:[["麻酔","クリーム ¥980／笑気 ¥2,200（部位ごと）"],
+      ["場所","札幌駅エリア（手稲からJRで通いやすい）"]],
+    url:"https://www.s-b-c.net/datsumo/charge_list/" },
+  regina:{ nm:"レジーナクリニック 札幌院", price:"VIO 5回 ¥96,000",
+    rows:[["麻酔・剃毛","どちらも無料"],
+      ["機種","熱破壊式・蓄熱式の両方を扱う"],
+      ["場所","大通駅 徒歩圏"]],
+    url:"https://reginaclinic.jp/part/vio/" },
+  freya:{ nm:"フレイアクリニック 札幌院", price:"VIO 5回 ¥99,000",
+    rows:[["麻酔","麻酔クリーム無料（安心プラン）"],
+      ["機種","熱破壊式・蓄熱式を選択可能"],
+      ["場所","札幌駅 南口 徒歩圏"]],
+    url:"https://www.frey-a.jp/menu/" },
+};
+
+const ANX = {
+  pain:["痛みが怖い","麻酔（クリーム／笑気）で軽減できます。まず1回試して耐えられるか確認するのが安全です。レジーナ・フレイアは麻酔が無料です。"],
+  shy:["露出や体勢が恥ずかしい","VIOは多くの女性が受けています。施術はタオルで露出を最小限に配慮し、体勢も決まった手順で進みます。女性スタッフを指名できる院を選べます。"],
+  female:["女性スタッフがよい","予約時に「女性スタッフ希望」と伝えれば対応する院が多いです。毎回女性が担当するかはカウンセリングで確認できます。"],
+  skin:["肌トラブルが心配","医療脱毛は医師・看護師の管理下にあり、赤みや毛嚢炎が出ても診察・薬で対応できます（エステにはこの対応がありません）。"],
+  booking:["予約がちゃんと取れるか不安","都度払い（あおば等）は1回ごとなので、自分のペースで無理なく通えます。コースの場合は予約の取りやすさをカウンセリングで確認しましょう。"],
+};
+
+/* ===== state ===== */
+const answers = {};
+let step = -1; // -1 intro, 0..n-1 questions, n result
+
+const app = document.getElementById("app");
+
+function render(){
+  if(step === -1) return renderIntro();
+  if(step >= 0 && step < QUESTIONS.length) return renderQ(step);
+  return renderResult();
+}
+
+function renderIntro(){
+  app.innerHTML = `
+    <div class="screen intro">
+      <div class="kicker">For you</div>
+      <h1>これは、あなたのために用意された<br>脱毛えらびのAIです。</h1>
+      <p>VIO脱毛は「医療かエステか」「どのクリニックか」で迷いやすい分野です。いくつかの質問に答えると、今のあなたに合った“最初の一歩”を整理して提案します。</p>
+      <ul>
+        <li>広告やランキングは使いません</li>
+        <li>料金・施術方式・通いやすさは事前に調べてあります</li>
+        <li>その場で契約を迫るものではありません</li>
+      </ul>
+      <p class="note">所要時間は約3分です。</p>
+      <p class="maker">製作：HK</p>
+      <button class="btn" onclick="go(0)">はじめる</button>
+    </div>`;
+}
+
+function renderQ(i){
+  const q = QUESTIONS[i];
+  const cur = answers[q.id] || (q.multi?[]:null);
+  const pct = Math.round((i)/QUESTIONS.length*100);
+  const optsHtml = q.opts.map(([label,val])=>{
+    const sel = q.multi ? cur.includes(val) : cur===val;
+    return `<div class="opt ${sel?'sel':''}" onclick="pick('${q.id}','${val}',${!!q.multi})">
+      <span class="ck">●</span>${label}</div>`;
+  }).join("");
+  app.innerHTML = `
+    <div class="screen">
+      <div class="progress">QUESTION ${i+1} / ${QUESTIONS.length}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <h2 class="q">${q.title}</h2>
+      ${q.lead?`<div class="lead">${q.lead}</div>`:""}
+      <div class="opts">${optsHtml}</div>
+      ${q.multi?`<button class="btn" onclick="next()">次へすすむ</button>`:""}
+      ${i>0?`<button class="back" onclick="go(${i-1})">← もどる</button>`:`<button class="back" onclick="go(-1)">← もどる</button>`}
+    </div>`;
+}
+
+function pick(id,val,multi){
+  if(multi){
+    const arr = answers[id] || [];
+    const idx = arr.indexOf(val);
+    if(idx>=0) arr.splice(idx,1); else arr.push(val);
+    answers[id]=arr; renderQ(step);
+  } else {
+    answers[id]=val; next();
+  }
+}
+function next(){ go(step+1); }
+function go(s){ step=s; render(); window.scrollTo(0,0); }
+
+/* ===== result logic（収束ファネル：第一推奨は常に「熱破壊式を1回試す」） ===== */
+function renderResult(){
+  const a = answers;
+  // why（痛みの回答でトーン調整）
+  let why;
+  if(a.pain==="accept") why="効果を重視するあなたには、最も効果実感が出やすい熱破壊式が向いています。まず1回試して、効果と痛みの両方を体感するのが確実です。";
+  else if(a.pain==="anesthesia") why="痛みが不安でも、まず1回試せば「自分が耐えられるか」が分かります。麻酔を併用すれば負担を抑えられます。";
+  else why="痛みを避けたい場合でも、エステに決める前に医療を1回だけ体感しておくと比較ができます。無理だと感じたら、下記のエステに切り替えれば十分です。";
+
+  // primary clinic = あおば（熱破壊式が確認できている唯一の都度払い）
+  let primary = cl("aoba", true);
+  // 札幌駅アクセス重視なら湘南を代替として併記
+  let altAccess = "";
+  if(a.access==="sapporo") altAccess = `<p class="note" style="margin-top:12px">札幌駅エリアで通いやすい代替：${cl("sbc",false)}</p>`;
+  if(a.access==="teine") altAccess = `<p class="note" style="margin-top:12px">医療を1回試すには札幌・大通へ出る必要があります（手稲区内に該当の医療脱毛は確認できていません）。近場で完結したい場合は、下のエステも候補です。</p>`;
+
+  // next step（続けるなら）
+  let nextStep="";
+  const wantsCourse = a.start==="course" || a.budget==="course" || a.method==="medical";
+  if(a.start==="counsel"){
+    nextStep = `<div class="factbox">まずは<b>無料カウンセリング</b>で、痛み・料金・通いやすさを直接確認するルートでも構いません。1回試すのは、それからでも遅くありません。</div>`;
+  } else if(wantsCourse){
+    if(a.pain==="avoid" || a.pain==="anesthesia"){
+      nextStep = cl("regina",false) + `<p class="note" style="margin-top:12px">札幌駅で通いたい場合の代替：${cl("freya",false)}</p>`;
+    } else {
+      nextStep = cl("sbc",false);
+    }
+  } else {
+    nextStep = `<div class="factbox">まずは上の<b>1回お試し</b>だけで十分です。続けたくなったら、そのとき料金とペースを見て決めれば大丈夫です。</div>`;
+  }
+
+  // esthetic escape
+  let esthe="";
+  if(a.pain==="avoid" || a.access==="teine" || a.method==="esthe"){
+    esthe = `<div class="sec"><h3>痛みを避けたい／近場で完結したい場合</h3>
+      <div class="factbox">手稲区内・近隣の<b>エステ脱毛</b>（LeLien、NO.NINE など）も選択肢です。ただしエステは医療より回数が多く必要で、効果は穏やかです。料金は各サロンで異なります。</div></div>`;
+  }
+
+  // 回数の目安
+  const counts = `<div class="sec"><h3>回数と期間の目安</h3>
+    <div class="factbox">VIOは毛が太く、他の部位より回数がかかります。<br>
+    ・<b>3回</b>ごろ：自己処理がかなり楽になる<br>
+    ・<b>5〜6回</b>：自己処理がほぼ不要に近づく（標準的なゴール）<br>
+    ・<b>8回</b>前後：ほぼ無毛（ハイジニーナ）<br>
+    施術は毛周期に合わせて2〜3か月おき。5回なら完了まで<b>約1年</b>が目安です。</div></div>`;
+
+  // 不安への回答
+  const anxArr = a.anxiety||[];
+  let anxHtml="";
+  if(anxArr.length){
+    anxHtml = `<div class="sec"><h3>あなたの不安について</h3>` +
+      anxArr.map(k=>`<div class="anx"><div class="t">${ANX[k][0]}</div><div class="a">${ANX[k][1]}</div></div>`).join("") +
+      `</div>`;
+  }
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="kicker">あなたへの提案</div>
+      <div class="rhead">まず「医療の熱破壊式」を<br>1回だけ試してみる。</div>
+      <p class="rwhy">${why}</p>
+
+      <div class="sec"><h3>最初の一歩（おすすめ）</h3>${primary}${altAccess}</div>
+
+      ${counts}
+
+      <div class="sec"><h3>気に入って続けるなら</h3>${nextStep}</div>
+
+      ${esthe}
+      ${anxHtml}
+
+      <div class="sec"><h3>このサイトについて</h3>
+        <div class="confirm">料金・施術方式・通いやすさは事前に調べてあります。唯一、<b>あおばの麻酔の有無・料金</b>だけは公式に記載がないため、痛みが不安な場合のみ予約時に確認してください。それ以外に、あなたが事前に調べる必要はありません。</div>
+      </div>
+
+      <p class="disc">※料金は2026年6月時点の調査値（税込）。キャンペーン等で変わることがあります。最終的な金額は各院の公式・カウンセリングでご確認ください。痛みや効果には個人差があります。</p>
+
+      <button class="btn ghost" onclick="restart()">もう一度はじめから</button>
+    </div>`;
+}
+
+function cl(key, primary){
+  const c = C[key];
+  const rows = c.rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  return `<div class="clcard ${primary?'primary':''}">
+    <div class="nm">${c.nm}</div>
+    <div class="price">${c.price}</div>
+    <dl>${rows}</dl>
+    <a href="${c.url}" target="_blank" rel="noopener">公式の料金ページを見る →</a>
+  </div>`;
+}
+
+function restart(){ for(const k in answers) delete answers[k]; go(-1); }
+
+/* ===== gate ===== */
+const gate=document.getElementById("gate"), codeIn=document.getElementById("code"), err=document.getElementById("err");
+function tryEnter(){
+  if(codeIn.value.trim()===PASSCODE){
+    gate.classList.add("hidden"); app.classList.remove("hidden");
+    sessionStorage.setItem("ok","1"); render();
+  } else { err.textContent="合言葉が違います。"; codeIn.value=""; }
+}
+document.getElementById("enter").onclick=tryEnter;
+codeIn.addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+if(sessionStorage.getItem("ok")==="1"){ gate.classList.add("hidden"); app.classList.remove("hidden"); render(); }
+</script>
+</body>
+</html>
